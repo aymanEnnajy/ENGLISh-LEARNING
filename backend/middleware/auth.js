@@ -29,7 +29,11 @@ export async function requireAuth(req, res, next) {
     req.supabase = userSupabase; // Attach scoped client
     next();
   } catch (err) {
-    console.error('Critical Auth middleware error:', err.message);
-    return res.status(500).json({ error: 'Authentication error' });
+    console.error('Critical Auth middleware error:', err);
+    return res.status(500).json({ 
+      error: 'Authentication error', 
+      details: err.message,
+      hint: 'Check if SUPABASE_URL and SUPABASE_ANON_KEY are set correctly on Vercel.'
+    });
   }
 }

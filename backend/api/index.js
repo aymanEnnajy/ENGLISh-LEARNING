@@ -21,6 +21,15 @@ app.use(express.json());
 app.use(generalLimiter);
 
 // Routes
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    supabaseUrl: !!(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL),
+    supabaseAnonKey: !!(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY),
+    nodeEnv: process.env.NODE_ENV,
+    cwd: process.cwd()
+  });
+});
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 app.use('/api/auth', authRoutes);
 app.use('/api/words', wordsRoutes);
