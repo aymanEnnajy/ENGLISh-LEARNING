@@ -1,0 +1,20 @@
+{
+  "name": "learn-english",
+  "version": "1.0.0",
+  "description": "A full-stack app to store English vocabulary and test yourself, built with **React + Vite**, **Express**, **Supabase**, and **Tailwind CSS**.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

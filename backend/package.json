@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Vocabulary Learning App Backend",
+  "main": "api/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "node --watch api/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@supabase/supabase-js": "^2.99.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.5.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

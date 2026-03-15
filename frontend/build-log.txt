@@ -1,0 +1,38 @@
+﻿[36mvite v8.0.0 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Ô£ô 2409 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.89 kB Ôöé gzip:   0.48 kB
+dist/assets/index-nqMpL4T3.css    1.78 kB Ôöé gzip:   0.81 kB
+dist/assets/index-DxG5sEmJ.js   833.87 kB Ôöé gzip: 248.63 kB
+
+node.exe : [33m[33m[PLUGIN_TIMINGS] 
+Warning:[0m Your build spent significant 
+time in plugin `rolldown:vite-resolve`. 
+See https://rolldown.rs/options/checks#plug
+intimings for more details.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified 
+   : ([33m[33m[PLUG...r more details.:S  
+  tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeComman 
+   dError
+ 
+[39m
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB 
+after minification. Consider:
+- Using dynamic import() to code-split the 
+application
+- Use 
+build.rolldownOptions.output.codeSplitting 
+to improve chunking: https://rolldown.rs/re
+ference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning 
+via build.chunkSizeWarningLimit.[39m
+[32mÔ£ô built in 28.50s[39m
