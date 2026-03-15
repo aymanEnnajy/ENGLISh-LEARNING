@@ -69,12 +69,14 @@ export async function getStats(req, res) {
     if (resultsError) console.error('Results Fetch Error:', resultsError.message);
     console.log('Test results found:', results?.length || 0);
 
-    const correctAnswers = results?.filter(r => r.is_correct).length || 0;
-    const wrongAnswers = results?.filter(r => !r.is_correct).length || 0;
+    const safeResults = results || [];
+
+    const correctAnswers = safeResults.filter(r => r.is_correct).length;
+    const wrongAnswers = safeResults.filter(r => !r.is_correct).length;
 
     // Words with at least 1 correct answer = "mastered"
     const masteredWordIds = new Set(
-      results?.filter(r => r.is_correct).map(r => r.word_id) || []
+      safeResults.filter(r => r.is_correct).map(r => r.word_id)
     );
 
     // Daily streak: count consecutive days with test activity
@@ -82,7 +84,7 @@ export async function getStats(req, res) {
     today.setHours(0, 0, 0, 0);
     let streak = 0;
     const activityDays = new Set(
-      results?.map(r => new Date(r.created_at).toDateString()) || []
+      safeResults.map(r => new Date(r.created_at).toDateString())
     );
     for (let i = 0; i < 365; i++) {
       const day = new Date(today);
@@ -100,7 +102,7 @@ export async function getStats(req, res) {
       const day = new Date(today);
       day.setDate(today.getDate() - i);
       const dayStr = day.toDateString();
-      const dayResults = results?.filter(r => new Date(r.created_at).toDateString() === dayStr) || [];
+      const dayResults = safeResults.filter(r => new Date(r.created_at).toDateString() === dayStr);
       dailyActivity.push({
         date: day.toISOString().split('T')[0],
         total: dayResults.length,
@@ -108,8 +110,8 @@ export async function getStats(req, res) {
       });
     }
 
-    const accuracyRate = results?.length > 0 
-      ? Math.round((correctAnswers / results.length) * 100) 
+    const accuracyRate = safeResults.length > 0 
+      ? Math.round((correctAnswers / safeResults.length) * 100) 
       : 0;
 
     // Words due for review (SRS)
