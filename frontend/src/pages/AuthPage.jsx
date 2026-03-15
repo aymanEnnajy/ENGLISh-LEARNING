@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { BookOpen, ArrowRight, Github } from 'lucide-react';
+import { BookOpen, ArrowRight, Github, Chrome } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import logoWhite from '../assets/logoWhite.png';
 import logoBlack from '../assets/logoBlack.png';
@@ -12,7 +12,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
-  const { login, signup, loading, user, register } = useAuthStore();
+  const { login, signup, loading, user, register, loginWithProvider } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +37,15 @@ export default function AuthPage() {
     } catch (err) {
       console.error('AuthPage caught error:', err.message);
       toast.error(err.message || 'Authentication failed. Check your connection.');
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      await loginWithProvider(provider);
+    } catch (err) {
+      console.error('Social Auth Error:', err);
+      toast.error(err.message || `Login with ${provider} failed.`);
     }
   };
 
@@ -87,10 +96,10 @@ export default function AuthPage() {
         <div className="w-full max-w-md animate-fade-in">
           <div className="mb-12">
             <h2 className="text-3xl font-display font-black tracking-tight mb-2 uppercase">
-              {isLogin ? 'Access Portal' : 'Create Identity'}
+              {isLogin ? 'Sign In' : 'Sign Up'}
             </h2>
             <p className="text-muted-foreground font-medium">
-              {isLogin ? 'Use your credentials to enter the vault.' : 'Establish your learning account today.'}
+              {isLogin ? 'Welcome back. Enter your credentials.' : 'Join the master class of vocabulary.'}
             </p>
           </div>
 
@@ -122,19 +131,19 @@ export default function AuthPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-zinc-400">Electronic Mail</label>
+              <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-zinc-400">Email Address</label>
               <input
                 type="email"
                 required
                 className="input-monochrome font-bold"
-                placeholder="name@company.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-zinc-400">Private Secret</label>
+              <label className="text-[10px] font-black uppercase tracking-widest ml-1 text-zinc-400">Password</label>
               <input
                 type="password"
                 required
@@ -151,7 +160,7 @@ export default function AuthPage() {
               className="w-full btn-monochrome h-14 relative group overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {isLogin ? 'Grant Access' : 'Create Account'}
+                {isLogin ? 'Sign In' : 'Sign Up'}
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </span>
             </button>
@@ -164,19 +173,22 @@ export default function AuthPage() {
           </div>
 
           <div className="mt-8">
-            <button className="w-full h-14 border-2 border-border rounded-xl flex items-center justify-center gap-3 hover:bg-secondary transition-all font-bold">
-              <Github size={20} />
-              <span>Identity Provider</span>
+            <button 
+              onClick={() => handleSocialLogin('google')}
+              className="w-full h-14 border-2 border-border rounded-xl flex items-center justify-center gap-3 hover:bg-secondary transition-all font-bold"
+            >
+              <Chrome size={20} />
+              <span>Continue with Google</span>
             </button>
           </div>
 
           <p className="mt-12 text-center text-sm font-bold text-muted-foreground">
-            {isLogin ? "No identity yet?" : "Already established?"}{' '}
+            {isLogin ? "No account yet?" : "Already have an account?"}{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="text-foreground underline underline-offset-4 decoration-2 hover:decoration-zinc-400"
             >
-              {isLogin ? 'Execute Signup' : 'Return to Portal'}
+              {isLogin ? 'Sign Up Now' : 'Sign In Now'}
             </button>
           </p>
         </div>

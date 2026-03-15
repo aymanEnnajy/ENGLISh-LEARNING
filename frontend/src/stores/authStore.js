@@ -55,6 +55,22 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  loginWithProvider: async (provider) => {
+    set({ loading: true });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      set({ loading: false });
+      throw err;
+    }
+  },
+
   register: async (email, password, displayName, phone) => {
     const { data, error } = await supabase.auth.signUp({ 
       email, 
