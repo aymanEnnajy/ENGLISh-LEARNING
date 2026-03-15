@@ -52,14 +52,14 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Brand Side - Monochrome Dark */}
-      <div className="lg:w-1/2 bg-black flex flex-col justify-center p-8 sm:p-16 lg:p-24 text-white relative overflow-hidden">
+      <div className="lg:w-1/2 bg-black flex flex-col justify-start p-8 sm:p-12 lg:p-16 lg:pt-16 text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-64 h-64 border border-white rounded-full translate-x-[-50%] translate-y-[-50%]" />
           <div className="absolute bottom-10 right-10 w-96 h-96 border border-white rounded-full translate-x-[50%] translate-y-[50%]" />
         </div>
         
         <div className="relative z-10 flex flex-col items-center lg:items-start text-center lg:text-left">
-          <div className="mb-8 w-full max-w-[80vw] h-[40vh] sm:h-[50vh] lg:h-[70vh] flex items-center justify-center lg:justify-start">
+          <div className="mb-4 w-full max-w-[80vw] h-[35vh] sm:h-[45vh] lg:h-[45vh] flex items-center justify-center lg:justify-start">
             <img 
               src={logoWhite} 
               alt="vocaMster Logo" 
@@ -92,7 +92,7 @@ export default function AuthPage() {
       </div>
 
       {/* Form Side - Monochrome Light */}
-      <div className="lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-background">
+      <div className="lg:w-1/2 flex items-center lg:items-start justify-center p-6 sm:p-12 lg:pt-16 bg-background overflow-y-auto">
         <div className="w-full max-w-md animate-fade-in">
           <div className="mb-12">
             <h2 className="text-3xl font-display font-black tracking-tight mb-2 uppercase">
