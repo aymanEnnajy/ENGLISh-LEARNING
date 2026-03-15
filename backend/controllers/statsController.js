@@ -150,7 +150,11 @@ export async function getStats(req, res) {
     console.log('--- STATS TRACE END ---');
     return res.json(responseData);
   } catch (err) {
-    console.error('CRITICAL Stats error:', err.message);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error('CRITICAL Stats error:', err);
+    return res.status(500).json({ 
+      error: 'Internal Server Error', 
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 }
