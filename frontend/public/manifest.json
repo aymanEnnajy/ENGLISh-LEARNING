@@ -13,10 +13,8 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
-}
-],
-"screenshots": [
+  ],
+  "screenshots": [
 {
   "src": "/favicon.png",
   "sizes": "192x192",
