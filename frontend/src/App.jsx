@@ -13,8 +13,6 @@ import StatsPage from './pages/StatsPage'; // This is now Dashboard
 import SettingsPage from './pages/SettingsPage';
 import PronunciationPage from './pages/PronunciationPage';
 
-import IOSInstallPrompt from './components/IOSInstallPrompt';
-
 function AppInit({ children }) {
   const initialize = useAuthStore((s) => s.initialize);
   useEffect(() => { initialize(); }, []);
@@ -35,7 +33,6 @@ export default function App() {
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
-          <IOSInstallPrompt />
         </AppInit>
       </BrowserRouter>
       <Toaster
