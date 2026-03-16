@@ -9,6 +9,8 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
     example_sentence: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (word) {
       setFormData({
@@ -20,7 +22,20 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
     } else {
       setFormData({ word: '', meaning_ar: '', meaning_fr: '', example_sentence: '' });
     }
+    setIsSubmitting(false); // Reset when word/isOpen changes
   }, [word, isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -39,7 +54,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
             </button>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Universal Term (English)</label>
               <input
@@ -48,6 +63,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                 placeholder="e.g. Resilience"
                 value={formData.word}
                 onChange={(e) => setFormData({ ...formData, word: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -60,6 +76,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                   placeholder="المعنى"
                   value={formData.meaning_ar}
                   onChange={(e) => setFormData({ ...formData, meaning_ar: e.target.value })}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
@@ -69,6 +86,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                   placeholder="Signification"
                   value={formData.meaning_fr}
                   onChange={(e) => setFormData({ ...formData, meaning_fr: e.target.value })}
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -80,13 +98,22 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                 placeholder="How do you use this word in a sentence?"
                 value={formData.example_sentence}
                 onChange={(e) => setFormData({ ...formData, example_sentence: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
 
             <div className="pt-4">
-              <button type="submit" className="w-full btn-monochrome h-14 flex items-center justify-center gap-2 group">
-                <Save size={18} className="group-hover:translate-y-[-1px] transition-transform" />
-                <span>{word ? 'Confirm Changes' : 'Create Entry'}</span>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full btn-monochrome h-14 flex items-center justify-center gap-2 group disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Save size={18} className="group-hover:translate-y-[-1px] transition-transform" />
+                )}
+                <span>{isSubmitting ? 'Processing...' : (word ? 'Confirm Changes' : 'Create Entry')}</span>
               </button>
             </div>
           </form>

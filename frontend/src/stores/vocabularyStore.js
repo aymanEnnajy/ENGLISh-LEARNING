@@ -33,21 +33,74 @@ export const useVocabularyStore = create((set, get) => ({
   },
 
   addWord: async (wordData) => {
-    const { data } = await api.post('/words', wordData);
-    // Reset to first page and refetch
-    set({ page: 1 });
-    await get().fetchWords();
-    return data.word;
+    const tempId = `temp-${Date.now()}`;
+    const newWord = { ...wordData, id: tempId, created_at: new Date().toISOString() };
+    
+    // Optimistic update
+    const previousWords = get().words;
+    const previousTotal = get().total;
+    
+    set((state) => ({
+      words: [newWord, ...state.words].slice(0, 10), // Keep it within limit
+      total: state.total + 1,
+    }));
+
+    try {
+      const { data } = await api.post('/words', wordData);
+      // Replace temp word with actual data
+      set((state) => ({
+        words: state.words.map(w => w.id === tempId ? data.word : w)
+      }));
+      return data.word;
+    } catch (err) {
+      // Rollback
+      set({ words: previousWords, total: previousTotal });
+      throw err;
+    }
   },
 
   updateWord: async (id, wordData) => {
-    const { data } = await api.put(`/words/${id}`, wordData);
-    await get().fetchWords();
-    return data.word;
+    const previousWords = get().words;
+    
+    // Optimistic update
+    set((state) => ({
+      words: state.words.map(w => w.id === id ? { ...w, ...wordData } : w)
+    }));
+
+    try {
+      const { data } = await api.put(`/words/${id}`, wordData);
+      // Ensure state is synced with server data (e.g. if server modified something)
+      set((state) => ({
+        words: state.words.map(w => w.id === id ? data.word : w)
+      }));
+      return data.word;
+    } catch (err) {
+      // Rollback
+      set({ words: previousWords });
+      throw err;
+    }
   },
 
   deleteWord: async (id) => {
-    await api.delete(`/words/${id}`);
-    await get().fetchWords();
+    const previousWords = get().words;
+    const previousTotal = get().total;
+
+    // Optimistic update
+    set((state) => ({
+      words: state.words.filter(w => w.id !== id),
+      total: state.total - 1
+    }));
+
+    try {
+      await api.delete(`/words/${id}`);
+      // If we're now on an empty page but there are more items, refetch
+      if (get().words.length === 0 && get().total > 0) {
+        await get().fetchWords();
+      }
+    } catch (err) {
+      // Rollback
+      set({ words: previousWords, total: previousTotal });
+      throw err;
+    }
   },
 }));

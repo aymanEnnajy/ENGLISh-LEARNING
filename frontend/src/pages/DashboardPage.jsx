@@ -5,6 +5,7 @@ import WordForm from '../components/WordForm';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../components/Pagination';
 import Layout from '../components/Layout';
+import ConfirmModal from '../components/ConfirmModal';
 import { Plus, LayoutGrid, List, SlidersHorizontal, Info, BookOpen } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -12,19 +13,25 @@ export default function DashboardPage() {
   const { words, fetchWords, loading, search, setSearch, page, setPage, total, deleteWord, addWord, updateWord } = useVocabularyStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   useEffect(() => {
     fetchWords();
   }, [page, search]);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this word?')) {
-      try {
-        await deleteWord(id);
-        toast.success('Word removed from library');
-      } catch (err) {
-        toast.error('Failed to delete word');
-      }
+  const handleDelete = (id) => {
+    setDeleteConfirm({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    const { id } = deleteConfirm;
+    if (!id) return;
+    
+    try {
+      await deleteWord(id);
+      toast.success('Word removed from library');
+    } catch (err) {
+      toast.error('Failed to delete word');
     }
   };
 
@@ -149,6 +156,16 @@ export default function DashboardPage() {
         onClose={() => setIsFormOpen(false)}
         word={editingWord}
         onSave={handleSave}
+      />
+
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title="Extract Word?"
+        message="This entry will be permanently removed from your lexical vault."
+        confirmText="Remove Entry"
+        type="danger"
       />
     </Layout>
   );
