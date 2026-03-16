@@ -2,10 +2,14 @@
   "name": "vocaMster - English Learning",
   "short_name": "vocaMster",
   "description": "Minimalist English vocabulary acquisition and pronunciation trainer.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "lang": "en",
+  "categories": ["education", "productivity", "utilities"],
   "icons": [
     {
       "src": "/favicon.png",
