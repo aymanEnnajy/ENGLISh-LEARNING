@@ -162,7 +162,8 @@ export async function getStats(req, res) {
     };
 
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    console.log('Dashboard Data:', JSON.stringify(responseData));
+    console.log('User stats for:', userId);
+    console.log('Dashboard Data Summary:', { total_words: responseData.total_words, words_due: responseData.words_due });
     console.log('--- STATS TRACE END ---');
     return res.json(responseData);
   } catch (err) {

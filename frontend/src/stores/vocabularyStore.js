@@ -18,6 +18,7 @@ export const useVocabularyStore = create((set, get) => ({
     set({ loading: true });
     try {
       const { data } = await api.get('/words', { params: { page, search, limit: 10 } });
+      console.log(`Store: Fetched ${data.words.length} words (Total: ${data.total})`);
       set({
         words: data.words,
         total: data.total,
@@ -36,6 +37,7 @@ export const useVocabularyStore = create((set, get) => ({
   fetchStats: async () => {
     try {
       const { data } = await api.get('/stats');
+      console.log('Store: Fetched stats:', { total: data.total_words, due: data.words_due });
       set({ stats: data });
     } catch (err) {
       console.error('Failed to fetch stats:', err.response?.data?.error || err.message);

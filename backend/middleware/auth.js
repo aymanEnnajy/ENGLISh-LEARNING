@@ -3,6 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('CRITICAL: Supabase environment variables are MISSING in the backend!');
+} else {
+  console.log('Backend Auth: Supabase config detected');
+}
+
 export async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
