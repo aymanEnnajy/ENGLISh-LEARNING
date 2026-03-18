@@ -9,39 +9,25 @@ import WordForm from '../components/WordForm';
 import { toast } from 'react-hot-toast';
 
 export default function StatsPage() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const navigate = useNavigate();
-  const { addWord } = useVocabularyStore();
+  const { addWord, stats, fetchStats, loading: storeLoading } = useVocabularyStore();
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   const handleSave = async (formData) => {
     try {
       await addWord(formData);
       toast.success('New word added');
       setIsFormOpen(false);
-      fetchStats(); // Refresh stats after adding word
     } catch (err) {
       toast.error('Operation failed');
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const { data } = await api.get('/stats');
-      setStats(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <Layout><div className="animate-pulse py-12 space-y-12"><div className="h-64 bg-secondary rounded-2xl" /><div className="grid grid-cols-3 gap-6"><div className="h-32 bg-secondary rounded-2xl" /><div className="h-32 bg-secondary rounded-2xl" /><div className="h-32 bg-secondary rounded-2xl" /></div></div></Layout>;
+  if (storeLoading && !stats) return <Layout><div className="animate-pulse py-12 space-y-12"><div className="h-64 bg-secondary rounded-2xl" /><div className="grid grid-cols-3 gap-6"><div className="h-32 bg-secondary rounded-2xl" /><div className="h-32 bg-secondary rounded-2xl" /><div className="h-32 bg-secondary rounded-2xl" /></div></div></Layout>;
 
   return (
     <Layout>

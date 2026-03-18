@@ -86,13 +86,26 @@ export async function getStats(req, res) {
     const activityDays = new Set(
       safeResults.map(r => new Date(r.created_at).toDateString())
     );
-    for (let i = 0; i < 365; i++) {
-      const day = new Date(today);
-      day.setDate(today.getDate() - i);
-      if (activityDays.has(day.toDateString())) {
-        streak++;
-      } else {
-        break;
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    // If they haven't practiced today AND haven't practiced yesterday, streak is 0
+    // Otherwise, we start counting from the most recent day of activity
+    if (!activityDays.has(today.toDateString()) && !activityDays.has(yesterday.toDateString())) {
+      streak = 0;
+    } else {
+      // Start from either today or yesterday (whichever was the most recent activity)
+      let currentDay = activityDays.has(today.toDateString()) ? today : yesterday;
+      
+      for (let i = 0; i < 365; i++) {
+        const checkDay = new Date(currentDay);
+        checkDay.setDate(currentDay.getDate() - i);
+        if (activityDays.has(checkDay.toDateString())) {
+          streak++;
+        } else {
+          break;
+        }
       }
     }
 
@@ -148,6 +161,7 @@ export async function getStats(req, res) {
       })),
     };
 
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     console.log('Dashboard Data:', JSON.stringify(responseData));
     console.log('--- STATS TRACE END ---');
     return res.json(responseData);

@@ -8,27 +8,37 @@ export const useVocabularyStore = create((set, get) => ({
   totalPages: 1,
   loading: false,
   search: '',
+  stats: null,
 
   setSearch: (search) => set({ search, page: 1 }),
   setPage: (page) => set({ page }),
 
   fetchWords: async () => {
     const { page, search } = get();
-    console.log(`Fetching words (page: ${page}, search: "${search}")...`);
     set({ loading: true });
     try {
       const { data } = await api.get('/words', { params: { page, search, limit: 10 } });
-      console.log('Words fetched successfully:', data.words.length, 'items found.');
       set({
         words: data.words,
         total: data.total,
         totalPages: data.totalPages,
         loading: false,
       });
+      // Also fetch stats whenever words are fetched to keep them in sync
+      get().fetchStats();
     } catch (err) {
       console.error('Failed to fetch words:', err.response?.data?.error || err.message);
       set({ loading: false });
       throw err;
+    }
+  },
+
+  fetchStats: async () => {
+    try {
+      const { data } = await api.get('/stats');
+      set({ stats: data });
+    } catch (err) {
+      console.error('Failed to fetch stats:', err.response?.data?.error || err.message);
     }
   },
 
@@ -40,17 +50,32 @@ export const useVocabularyStore = create((set, get) => ({
     const previousWords = get().words;
     const previousTotal = get().total;
     
-    set((state) => ({
-      words: [newWord, ...state.words].slice(0, 10), // Keep it within limit
-      total: state.total + 1,
-    }));
+    // Only show optimistically if we are on page 1 and no search
+    const { page, search } = get();
+    if (page === 1 && !search) {
+      set((state) => ({
+        words: [newWord, ...state.words].slice(0, 10),
+        total: state.total + 1,
+      }));
+    } else {
+      set((state) => ({ total: state.total + 1 }));
+    }
 
     try {
       const { data } = await api.post('/words', wordData);
-      // Replace temp word with actual data
-      set((state) => ({
-        words: state.words.map(w => w.id === tempId ? data.word : w)
-      }));
+      
+      // If we are on page 1, replace temp word. If not, reset to page 1 and refetch
+      if (get().page === 1 && !get().search) {
+        set((state) => ({
+          words: state.words.map(w => w.id === tempId ? data.word : w)
+        }));
+      } else {
+        set({ page: 1, search: '' });
+        await get().fetchWords();
+      }
+      
+      // Always refresh stats after successful add
+      await get().fetchStats();
       return data.word;
     } catch (err) {
       // Rollback
@@ -93,10 +118,9 @@ export const useVocabularyStore = create((set, get) => ({
 
     try {
       await api.delete(`/words/${id}`);
-      // If we're now on an empty page but there are more items, refetch
-      if (get().words.length === 0 && get().total > 0) {
-        await get().fetchWords();
-      }
+      // Refetch to fill the gap and refresh stats
+      await get().fetchWords();
+      await get().fetchStats();
     } catch (err) {
       // Rollback
       set({ words: previousWords, total: previousTotal });

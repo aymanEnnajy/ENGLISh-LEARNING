@@ -14,6 +14,25 @@ export default function DashboardPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWord, setEditingWord] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('vocabViewMode') || 'grid');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    hasAr: false,
+    hasFr: false,
+    hasExample: false
+  });
+
+  const toggleViewMode = (mode) => {
+    setViewMode(mode);
+    localStorage.setItem('vocabViewMode', mode);
+  };
+
+  const filteredWords = words.filter(word => {
+    if (activeFilters.hasAr && !word.meaning_ar) return false;
+    if (activeFilters.hasFr && !word.meaning_fr) return false;
+    if (activeFilters.hasExample && !word.example_sentence) return false;
+    return true;
+  });
 
   useEffect(() => {
     fetchWords();
@@ -87,21 +106,73 @@ export default function DashboardPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 pb-8 border-b border-border">
-          <div className="flex-1">
-            <SearchBar value={search} onChange={setSearch} />
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
-            <button className="h-12 px-4 bg-secondary border border-border rounded-xl flex items-center gap-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-              <SlidersHorizontal size={16} />
-              <span className="text-sm font-bold">Filters</span>
-            </button>
-            <div className="h-4 w-px bg-border mx-1" />
-            <div className="flex bg-secondary p-1 rounded-xl border border-border">
-              <button className="p-2 bg-background shadow-soft rounded-lg text-foreground"><LayoutGrid size={18} /></button>
-              <button className="p-2 text-muted-foreground hover:text-foreground"><List size={18} /></button>
+        <div className="flex flex-col gap-4 mb-10 pb-8 border-b border-border">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <SearchBar value={search} onChange={setSearch} />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`h-12 px-4 border rounded-xl flex items-center gap-2 transition-all ${
+                  isFilterOpen || Object.values(activeFilters).some(v => v)
+                    ? 'bg-black text-white border-black' 
+                    : 'bg-secondary border-border hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <SlidersHorizontal size={16} />
+                <span className="text-sm font-bold">Filters</span>
+              </button>
+              <div className="h-4 w-px bg-border mx-1" />
+              <div className="flex bg-secondary p-1 rounded-xl border border-border">
+                <button 
+                  onClick={() => toggleViewMode('grid')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-background shadow-soft text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button 
+                  onClick={() => toggleViewMode('list')}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-background shadow-soft text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <List size={18} />
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Expanded Filter Panel */}
+          {isFilterOpen && (
+            <div className="bg-zinc-50 dark:bg-zinc-900 border border-border rounded-2xl p-4 flex flex-wrap gap-4 animate-scale-in">
+              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground w-full mb-1 ml-1">Attribute Filtering</div>
+              <button
+                onClick={() => setActiveFilters(prev => ({ ...prev, hasAr: !prev.hasAr }))}
+                className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${activeFilters.hasAr ? 'bg-black text-white border-black' : 'bg-background border-border text-muted-foreground'}`}
+              >
+                Has Arabic
+              </button>
+              <button
+                onClick={() => setActiveFilters(prev => ({ ...prev, hasFr: !prev.hasFr }))}
+                className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${activeFilters.hasFr ? 'bg-black text-white border-black' : 'bg-background border-border text-muted-foreground'}`}
+              >
+                Has French
+              </button>
+              <button
+                onClick={() => setActiveFilters(prev => ({ ...prev, hasExample: !prev.hasExample }))}
+                className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${activeFilters.hasExample ? 'bg-black text-white border-black' : 'bg-background border-border text-muted-foreground'}`}
+              >
+                Has Example
+              </button>
+              {Object.values(activeFilters).some(v => v) && (
+                <button
+                  onClick={() => setActiveFilters({ hasAr: false, hasFr: false, hasExample: false })}
+                  className="px-4 py-2 text-xs font-black uppercase text-zinc-400 hover:text-red-500 transition-colors"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Content Grid */}
@@ -111,13 +182,17 @@ export default function DashboardPage() {
               <div key={i} className="h-64 bg-secondary rounded-2xl" />
             ))}
           </div>
-        ) : words.length > 0 ? (
+        ) : filteredWords.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 scale-in">
-              {words.map((word) => (
+            <div className={viewMode === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 gap-6 scale-in" 
+              : "flex flex-col gap-4 scale-in"
+            }>
+              {filteredWords.map((word) => (
                 <VocabCard
                   key={word.id}
                   word={word}
+                  viewMode={viewMode}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
