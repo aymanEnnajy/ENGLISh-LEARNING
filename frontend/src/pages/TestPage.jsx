@@ -9,9 +9,17 @@ export default function TestPage() {
   const { mode, setMode, currentWord, mcqOptions, startTest, nextQuestion, submitAnswer, feedback, correctAnswers, totalQuestions, isFinished, loading, resetTest, finishTest } = useTestStore();
   const [answer, setAnswer] = useState('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hintCount, setHintCount] = useState(0);
+
+  const handleReset = () => {
+    setAnswer('');
+    setHasSubmitted(false);
+    setHintCount(0);
+    resetTest();
+  };
 
   useEffect(() => {
-    return () => resetTest();
+    return () => handleReset();
   }, []);
 
   const handleStart = (m) => {
@@ -34,7 +42,28 @@ export default function TestPage() {
   const handleNext = () => {
     setAnswer('');
     setHasSubmitted(false);
+    setHintCount(0);
     nextQuestion();
+  };
+
+  const handleHint = () => {
+    if (hasSubmitted || !currentWord) return;
+
+    if (hintCount === 0) {
+      setAnswer(currentWord.word[0]);
+      setHintCount(1);
+    } else if (hintCount === 1) {
+      setAnswer(currentWord.word.slice(0, 2));
+      setHintCount(2);
+    } else if (hintCount === 2) {
+      // "I don't know" mode - reveal full word and submit as incorrect
+      setAnswer(currentWord.word);
+      submitAnswer(currentWord.word + " (HINT)"); // Intentional mismatch or just mark as failed
+      setHasSubmitted(true);
+      if (totalQuestions + 1 >= 10) {
+        setTimeout(finishTest, 1000);
+      }
+    }
   };
 
   if (isFinished) {
@@ -60,7 +89,7 @@ export default function TestPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={resetTest} className="flex-1 btn-monochrome h-14 flex items-center justify-center gap-2">
+            <button onClick={handleReset} className="flex-1 btn-monochrome h-14 flex items-center justify-center gap-2">
               <RotateCcw size={18} />
               <span>Next Session</span>
             </button>
@@ -120,7 +149,7 @@ export default function TestPage() {
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-black uppercase tracking-widest">Question {totalQuestions + 1}/10</span>
           </div>
-          <button onClick={resetTest} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground">Abort Session</button>
+          <button onClick={handleReset} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground">Abort Session</button>
         </div>
         <div className="h-1 bg-secondary rounded-full overflow-hidden mb-12">
           <div 
@@ -172,9 +201,18 @@ export default function TestPage() {
                 </div>
                 
                 {!hasSubmitted && (
-                  <button type="submit" className="w-full btn-monochrome h-14">
-                    Submit Word
-                  </button>
+                  <div className="flex gap-4">
+                    <button type="submit" className="flex-[2] btn-monochrome h-14">
+                      Submit Word
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={handleHint}
+                      className="flex-1 border-2 border-zinc-200 rounded-xl hover:bg-secondary transition-colors font-bold uppercase text-[10px] tracking-widest"
+                    >
+                      {hintCount === 2 ? "I DON'T KNOW" : "HINT"}
+                    </button>
+                  </div>
                 )}
               </form>
             ) : (
