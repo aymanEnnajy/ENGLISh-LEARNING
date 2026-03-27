@@ -96,6 +96,7 @@ export async function generateVocabDetailsHandler(req, res) {
     const result = await generateVocabDetails(word);
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to generate vocabulary details' });
+    console.error('generateVocabDetailsHandler ERROR:', err);
+    return res.status(500).json({ error: `Failed to generate vocabulary details: ${err.message}` });
   }
 }

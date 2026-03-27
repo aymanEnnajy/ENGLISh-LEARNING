@@ -75,7 +75,7 @@ export async function generateSentence(word, meaning) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant', // Using smaller model for speed
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
@@ -109,7 +109,8 @@ function getFallbackOptions(word) {
 }
 
 /**
- * Generate vocabulary details (Arabic, French meanings and example sentence) using Groq AI.
+ * Generate vocabulary details (Arabic & French translations + example sentence) using Groq AI.
+ * Uses the llama-3.3-70b-versatile model with a refined linguist prompt.
  */
 export async function generateVocabDetails(word) {
   if (!API_KEY) {
@@ -128,11 +129,26 @@ export async function generateVocabDetails(word) {
         messages: [
           {
             role: 'system',
-            content: 'You are a vocabulary assistant. Given an English word, return a JSON object with: "meaning_ar" (its Arabic translation), "meaning_fr" (its French translation), and "example_sentence" (a short, simple English sentence using the word). Return ONLY a valid JSON object. No formatting, no extra text.'
+            content: `You are a certified professional translator specializing in English, Arabic, and French.
+Your task: Given an English word or phrase, provide accurate, natural translations.
+
+Rules for Arabic translation (meaning_ar):
+- Use Modern Standard Arabic (فصحى)
+- Give the most commonly used and natural translation
+- For single words, give the direct Arabic equivalent
+- For phrases/idioms, give the Arabic equivalent expression
+- Examples: "forefront" = "في المقدمة", "resilience" = "المرونة", "peer pressure" = "ضغط الأقران", "nevertheless" = "مع ذلك"
+
+Rules for French translation (meaning_fr):
+- Give the most natural and commonly used French equivalent
+
+Return ONLY a valid JSON object with exactly these 3 keys:
+{"meaning_ar": "الترجمة العربية", "meaning_fr": "traduction française", "example_sentence": "A short English sentence using the word."}
+No extra text, no markdown, no code blocks.`
           },
           {
             role: 'user',
-            content: `Word: "${word}"`
+            content: `Translate: "${word}"`
           }
         ],
         response_format: { type: 'json_object' }
@@ -140,15 +156,15 @@ export async function generateVocabDetails(word) {
     });
 
     if (!response.ok) {
-      throw new Error(`Groq API error: ${response.statusText}`);
+      throw new Error(`Groq API error [${response.status}]: ${response.statusText}`);
     }
 
     const data = await response.json();
     let content = data.choices[0].message.content;
-    
-    // Strip markdown formatting if the model wrapped it in ```json ... ```
+
+    // Strip markdown formatting if the model wrapped it
     content = content.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
-    
+
     return JSON.parse(content);
   } catch (err) {
     console.error('Groq Vocab Details generation error:', err.message);
