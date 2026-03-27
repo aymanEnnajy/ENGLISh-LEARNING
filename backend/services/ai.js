@@ -3,15 +3,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const API_KEY = process.env.AI_API_KEY;
 
 /**
  * Generate MCQ options for a vocabulary word using Groq AI.
  * Returns: { correct, options: [string] }
  */
 export async function generateMCQ(word, meaning) {
+  const API_KEY = process.env.AI_API_KEY;
   if (!API_KEY) {
-    console.error('Groq API Key is missing');
+    console.error('Groq API Key (AI_API_KEY) is missing in .env');
     return getFallbackOptions(word);
   }
 
@@ -63,6 +63,7 @@ export async function generateMCQ(word, meaning) {
  * Returns: { sentence }
  */
 export async function generateSentence(word, meaning) {
+  const API_KEY = process.env.AI_API_KEY;
   if (!API_KEY) {
     return { sentence: `Could you please define the word "${word}" in a short sentence?` };
   }
@@ -113,8 +114,9 @@ function getFallbackOptions(word) {
  * Uses the llama-3.3-70b-versatile model with a refined linguist prompt.
  */
 export async function generateVocabDetails(word) {
+  const API_KEY = process.env.AI_API_KEY;
   if (!API_KEY) {
-    throw new Error('Groq API Key is missing');
+    throw new Error('Groq API Key (AI_API_KEY) is missing in .env');
   }
 
   try {
