@@ -23,7 +23,10 @@ export default function Navbar() {
             className="h-full w-auto object-contain"
           />
         </Link>
-        <span className="font-display font-black text-2xl sm:text-4xl tracking-tighter uppercase text-foreground">
+        <span 
+          className="font-black text-2xl sm:text-4xl uppercase text-foreground"
+          style={{ fontFamily: "'Montserrat', 'Inter', system-ui, sans-serif", letterSpacing: '-0.03em' }}
+        >
           voca<span className="text-zinc-500">Mster</span>
         </span>
       </div>
