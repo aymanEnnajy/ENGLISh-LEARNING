@@ -1,5 +1,6 @@
 import { X, Save, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../services/api';
 
 export default function WordForm({ word, isOpen, onClose, onSave }) {
@@ -72,8 +73,8 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
 
   const aiBtnDisabled = isGenerating || !formData.word.trim();
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+  const modalContent = (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
       <div className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl animate-scale-in overflow-hidden">
@@ -182,4 +183,10 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
       </div>
     </div>
   );
+
+  // Use document.body if it exists (for browser), otherwise just render normally (for SSR if any)
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }
