@@ -12,6 +12,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
   useEffect(() => {
     if (word) {
       setFormData({
@@ -41,6 +42,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
   const handleAutoFill = async () => {
     if (!formData.word.trim() || isGenerating) return;
     setIsGenerating(true);
+    setGenerateError('');
     try {
       const { data } = await api.post('/ai/generate-vocab-details', { word: formData.word });
       setFormData(prev => ({
@@ -51,6 +53,12 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
       }));
     } catch (err) {
       console.error('Failed to auto-fill vocab details', err);
+      // Give a friendly message. 404 probably means server needs restart.
+      if (err.response?.status === 404) {
+        setGenerateError('API route not found. Did you restart the backend server?');
+      } else {
+        setGenerateError('Failed to generate from AI. Please try again.');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -75,30 +83,34 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Universal Term (English)</label>
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Universal Term (English)</label>
+              <div className="flex gap-2">
+                <input
+                  required
+                  className="input-monochrome font-bold placeholder:text-zinc-500/30 w-full"
+                  placeholder="e.g. Resilience"
+                  value={formData.word}
+                  onChange={(e) => setFormData({ ...formData, word: e.target.value })}
+                  disabled={isSubmitting || isGenerating}
+                />
                 <button 
                   type="button"
                   onClick={handleAutoFill}
                   disabled={isGenerating || !formData.word.trim()}
-                  className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 hover:text-foreground disabled:opacity-50 transition-colors"
+                  className="btn-monochrome px-4 rounded-xl flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGenerating ? (
-                    <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
                   ) : (
-                    <Sparkles size={12} />
+                    <Sparkles size={18} />
                   )}
-                  Auto-fill with AI
+                  <span className="hidden sm:inline font-bold">AI Auto-fill</span>
                 </button>
               </div>
-              <input
-                required
-                className="input-monochrome font-bold placeholder:text-zinc-500/30"
-                placeholder="e.g. Resilience"
-                value={formData.word}
-                onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-                disabled={isSubmitting || isGenerating}
-              />
+              {generateError && (
+
+                <p className="text-xs text-rose-500 font-bold mt-1">{generateError}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

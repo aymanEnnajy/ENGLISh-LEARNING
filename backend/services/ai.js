@@ -144,7 +144,12 @@ export async function generateVocabDetails(word) {
     }
 
     const data = await response.json();
-    return JSON.parse(data.choices[0].message.content);
+    let content = data.choices[0].message.content;
+    
+    // Strip markdown formatting if the model wrapped it in ```json ... ```
+    content = content.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+    
+    return JSON.parse(content);
   } catch (err) {
     console.error('Groq Vocab Details generation error:', err.message);
     throw err;
