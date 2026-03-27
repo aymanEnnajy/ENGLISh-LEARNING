@@ -73,7 +73,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
   const aiBtnDisabled = isGenerating || !formData.word.trim();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
       <div className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl animate-scale-in overflow-hidden">
