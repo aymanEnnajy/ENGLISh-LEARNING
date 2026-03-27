@@ -107,3 +107,46 @@ function getFallbackOptions(word) {
     options: [word, 'Option B', 'Option C', 'Option D'].sort(() => Math.random() - 0.5),
   };
 }
+
+/**
+ * Generate vocabulary details (Arabic, French meanings and example sentence) using Groq AI.
+ */
+export async function generateVocabDetails(word) {
+  if (!API_KEY) {
+    throw new Error('Groq API Key is missing');
+  }
+
+  try {
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a vocabulary assistant. Given an English word, return a JSON object with: "meaning_ar" (its Arabic translation), "meaning_fr" (its French translation), and "example_sentence" (a short, simple English sentence using the word). Return ONLY a valid JSON object. No formatting, no extra text.'
+          },
+          {
+            role: 'user',
+            content: `Word: "${word}"`
+          }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Groq API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return JSON.parse(data.choices[0].message.content);
+  } catch (err) {
+    console.error('Groq Vocab Details generation error:', err.message);
+    throw err;
+  }
+}

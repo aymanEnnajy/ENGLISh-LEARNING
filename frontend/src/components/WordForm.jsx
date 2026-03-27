@@ -1,5 +1,6 @@
-import { X, Save, Plus } from 'lucide-react';
+import { X, Save, Plus, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import api from '../services/api';
 
 export default function WordForm({ word, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isGenerating, setIsGenerating] = useState(false);
   useEffect(() => {
     if (word) {
       setFormData({
@@ -37,6 +38,24 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
     }
   };
 
+  const handleAutoFill = async () => {
+    if (!formData.word.trim() || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const { data } = await api.post('/ai/generate-vocab-details', { word: formData.word });
+      setFormData(prev => ({
+        ...prev,
+        meaning_ar: data.meaning_ar || prev.meaning_ar,
+        meaning_fr: data.meaning_fr || prev.meaning_fr,
+        example_sentence: data.example_sentence || prev.example_sentence
+      }));
+    } catch (err) {
+      console.error('Failed to auto-fill vocab details', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -56,14 +75,29 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Universal Term (English)</label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Universal Term (English)</label>
+                <button 
+                  type="button"
+                  onClick={handleAutoFill}
+                  disabled={isGenerating || !formData.word.trim()}
+                  className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 hover:text-foreground disabled:opacity-50 transition-colors"
+                >
+                  {isGenerating ? (
+                    <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  ) : (
+                    <Sparkles size={12} />
+                  )}
+                  Auto-fill with AI
+                </button>
+              </div>
               <input
                 required
                 className="input-monochrome font-bold placeholder:text-zinc-500/30"
                 placeholder="e.g. Resilience"
                 value={formData.word}
                 onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isGenerating}
               />
             </div>
 
@@ -76,7 +110,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                   placeholder="المعنى"
                   value={formData.meaning_ar}
                   onChange={(e) => setFormData({ ...formData, meaning_ar: e.target.value })}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isGenerating}
                 />
               </div>
               <div className="space-y-2">
@@ -86,7 +120,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                   placeholder="Signification"
                   value={formData.meaning_fr}
                   onChange={(e) => setFormData({ ...formData, meaning_fr: e.target.value })}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isGenerating}
                 />
               </div>
             </div>
@@ -98,7 +132,7 @@ export default function WordForm({ word, isOpen, onClose, onSave }) {
                 placeholder="How do you use this word in a sentence?"
                 value={formData.example_sentence}
                 onChange={(e) => setFormData({ ...formData, example_sentence: e.target.value })}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isGenerating}
               />
             </div>
 

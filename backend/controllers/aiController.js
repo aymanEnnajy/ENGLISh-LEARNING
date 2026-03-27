@@ -1,4 +1,4 @@
-import { generateMCQ, generateSentence } from '../services/ai.js';
+import { generateMCQ, generateSentence, generateVocabDetails } from '../services/ai.js';
 
 // POST /ai/generate-mcq
 export async function generateMCQHandler(req, res) {
@@ -81,5 +81,21 @@ export async function generateSentenceHandler(req, res) {
     return res.json(result);
   } catch (err) {
     return res.status(500).json({ error: 'Failed to generate AI sentence' });
+  }
+}
+
+// POST /ai/generate-vocab-details
+export async function generateVocabDetailsHandler(req, res) {
+  const { word } = req.body;
+
+  if (!word) {
+    return res.status(400).json({ error: 'word is required' });
+  }
+
+  try {
+    const result = await generateVocabDetails(word);
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to generate vocabulary details' });
   }
 }
